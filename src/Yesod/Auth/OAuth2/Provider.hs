@@ -50,9 +50,14 @@ newtype ProviderName = ProviderName { providerName :: Text }
 
 data Provider m a = Provider
     { pName :: ProviderName
-    , pClientId :: ClientId
-    , pClientSecret :: ClientSecret
-    , pAuthorizeEndpoint :: AuthorizeEndpoint
+    , pAuthorizeEndpoint :: ClientId -> AuthorizeEndpoint
+    -- ^ Authorization endpoint
+    --
+    -- Some providers need to include the client-id in the request, so it's
+    -- provided here. Most providers can ignore it
+    --
+    -- > pAuthorizeEndpoint = const "http://example.com/oauth2/authorize"
+    --
     , pAccessTokenEndpoint :: AccessTokenEndpoint
     , pFetchUserProfile :: Manager -> AccessToken -> IO (Either Text ByteString)
     -- ^ Fetch an API response with user-identifying data

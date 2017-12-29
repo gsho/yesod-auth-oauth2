@@ -6,12 +6,10 @@ module Yesod.Auth.OAuth2.Upcase
 import Yesod.Auth.OAuth2.Provider
 import Yesod.Auth.OAuth2.UserId
 
-oauth2Upcase :: ClientId -> ClientSecret -> Provider m UserId
-oauth2Upcase cid cs = Provider
+oauth2Upcase :: Provider m UserId
+oauth2Upcase = Provider
     { pName = "upcase"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = "http://upcase.com/oauth/authorize"
+    , pAuthorizeEndpoint = const "http://upcase.com/oauth/authorize"
     , pAccessTokenEndpoint = "http://upcase.com/oauth/token"
     , pFetchUserProfile = authGetProfile "http://upcase.com/api/v1/me.json"
     , pParseUserProfile = eitherDecode

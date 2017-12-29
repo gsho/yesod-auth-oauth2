@@ -12,12 +12,10 @@ newtype UserId = UserId { userId :: Text }
 instance FromJSON UserId where
     parseJSON = withObject "User" $ \o -> UserId <$> o .: "uuid"
 
-oauth2Bitbucket :: ClientId -> ClientSecret -> [Scope] -> Provider m UserId
-oauth2Bitbucket cid cs scopes = Provider
+oauth2Bitbucket :: [Scope] -> Provider m UserId
+oauth2Bitbucket scopes = Provider
     { pName = "bitbucket"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "https://bitbucket.com/site/oauth2/authorize" `withQuery`
             [ scopeParam "," scopes
             ]

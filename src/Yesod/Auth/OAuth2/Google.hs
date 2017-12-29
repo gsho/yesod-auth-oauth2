@@ -19,12 +19,10 @@ instance FromJSON UserId where
 userIdent :: UserId -> Text
 userIdent (UserId x) = "google-uid:" <> x
 
-oauth2Google :: ClientId -> ClientSecret -> [Scope] -> Provider m UserId
-oauth2Google cid cs scopes = Provider
+oauth2Google :: [Scope] -> Provider m UserId
+oauth2Google scopes = Provider
     { pName = "google"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "https://accounts.google.com/o/oauth2/auth" `withQuery`
             [ scopeParam "+" scopes
             ]

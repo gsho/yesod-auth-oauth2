@@ -12,12 +12,10 @@ newtype CharId = CharId { charId :: Int }
 instance FromJSON CharId where
     parseJSON = withObject "Character" $ \o -> CharId <$> o .: "CharacterId"
 
-oauth2EveOnline :: ClientId -> ClientSecret -> [Scope] -> Provider m CharId
-oauth2EveOnline cid cs scopes = Provider
+oauth2EveOnline :: [Scope] -> Provider m CharId
+oauth2EveOnline scopes = Provider
     { pName = "eveonline"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "https://login.eveonline.com/oauth/authorize" `withQuery`
             [ ("response_type", "code")
             , scopeParam " " scopes

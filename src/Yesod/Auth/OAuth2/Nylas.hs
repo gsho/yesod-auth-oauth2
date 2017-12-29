@@ -11,12 +11,10 @@ import URI.ByteString.Extension (withQuery)
 import Yesod.Auth.OAuth2.Provider
 import Yesod.Auth.OAuth2.UserId
 
-oauth2Nylas :: ClientId -> ClientSecret -> Provider m UserIdText
-oauth2Nylas cid cs = Provider
+oauth2Nylas :: Provider m UserIdText
+oauth2Nylas = Provider
     { pName = "nylas"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint $
+    , pAuthorizeEndpoint = \cid -> AuthorizeEndpoint $
         "https://api.nylas.com/oauth/authorize" `withQuery`
             [ ("client_id", encodeUtf8 $ clientId cid)
             , ("response_type", "code")

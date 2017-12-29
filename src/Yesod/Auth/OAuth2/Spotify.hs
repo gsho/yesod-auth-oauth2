@@ -6,12 +6,10 @@ module Yesod.Auth.OAuth2.Spotify
 import Yesod.Auth.OAuth2.Provider
 import Yesod.Auth.OAuth2.UserId
 
-oauth2Spotify :: ClientId -> ClientSecret -> [Scope] -> Provider m UserIdText
-oauth2Spotify cid cs scopes = Provider
+oauth2Spotify :: [Scope] -> Provider m UserIdText
+oauth2Spotify scopes = Provider
     { pName = "spotify"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "https://accounts.spotify.com/authorize" `withQuery`
             [ scopeParam " " scopes
             ]

@@ -23,9 +23,9 @@ oauth2Url (ProviderName name) = PluginR name ["forward"]
 -- > import Yesod.Auth.OAuth2
 -- > import Yesod.Auth.OAuth2.Github
 -- >
--- > authOAuth2 $ oauth2Github "CLIENT_ID" "CLIENT_SECRET" defaultScopes
+-- > authOAuth2 (oauth2Github defaultScopes) "CLIENT_ID" "CLIENT_SECRET"
 --
-authOAuth2 :: YesodAuth m => Provider m a -> AuthPlugin m
+authOAuth2 :: YesodAuth m => Provider m a -> ClientId -> ClientSecret -> AuthPlugin m
 authOAuth2 = authOAuth2Widget $ \name toParent ->
     [whamlet|
         <a href=@{toParent $ oauth2Url name}>
@@ -44,12 +44,14 @@ authOAuth2 = authOAuth2Widget $ \name toParent ->
 -- >                 Login via #{providerName name}
 -- >         |]
 -- >     )
--- >     $ oauth2Github -- ...
+-- >     $ (oauth2Github defaultScopes) -- ...
 --
 authOAuth2Widget
     :: YesodAuth m
     => (ProviderName -> (Route Auth -> Route m) -> WidgetT m IO ())
     -> Provider m a
+    -> ClientId
+    -> ClientSecret
     -> AuthPlugin m
-authOAuth2Widget widget p@Provider{..} =
-    AuthPlugin (providerName pName) (dispatchAuthRequest p) $ widget pName
+authOAuth2Widget widget p@Provider{..} cid cs =
+    AuthPlugin (providerName pName) (dispatchAuthRequest p cid cs) $ widget pName

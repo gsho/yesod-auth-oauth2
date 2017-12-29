@@ -11,12 +11,10 @@ import Network.OAuth.OAuth2 (AccessToken(..))
 import Yesod.Auth.OAuth2.Provider
 import Yesod.Auth.OAuth2.UserId
 
-oauth2Slack :: ClientId -> ClientSecret -> [Scope] -> Provider m UserIdText
-oauth2Slack cid cs scopes = Provider
+oauth2Slack :: [Scope] -> Provider m UserIdText
+oauth2Slack scopes = Provider
     { pName = "slack"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "https://slack.com/oauth/authorize" `withQuery`
             [ scopeParam "," scopes
             ]

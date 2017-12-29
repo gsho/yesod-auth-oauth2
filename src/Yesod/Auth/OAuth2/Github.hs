@@ -7,12 +7,10 @@ module Yesod.Auth.OAuth2.Github
 import Yesod.Auth.OAuth2.Provider
 import Yesod.Auth.OAuth2.UserId
 
-oauth2Github :: ClientId -> ClientSecret -> [Scope] -> Provider m UserId
-oauth2Github cid cs scopes = Provider
+oauth2Github :: [Scope] -> Provider m UserId
+oauth2Github scopes = Provider
     { pName = "github"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "http://github.com/login/oauth/authorize" `withQuery`
             [ scopeParam "," scopes
             ]

@@ -12,15 +12,11 @@ import Yesod.Auth.OAuth2.Provider
 import Yesod.Auth.OAuth2.UserId
 
 oauth2BattleNet
-    :: ClientId
-    -> ClientSecret
-    -> Text -- ^ Lower-case region (cn, us, etc)
+    :: Text -- ^ Lower-case region (cn, us, etc)
     -> Provider m UserId
-oauth2BattleNet cid cs region = Provider
+oauth2BattleNet region = Provider
     { pName = "battle.net"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint $ wwwPath "/oauth/authorize"
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint $ wwwPath "/oauth/authorize"
     , pAccessTokenEndpoint = AccessTokenEndpoint $ wwwPath "/oauth/token"
     , pFetchUserProfile = authGetProfile $ apiPath "/account/user"
     , pParseUserProfile = eitherDecode

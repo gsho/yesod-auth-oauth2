@@ -20,20 +20,20 @@ import Yesod.Auth.OAuth2.Provider
 import Yesod.Core
 
 -- | Dispatch the various OAuth2 handshake routes
-dispatchAuthRequest :: Provider app a -> Text -> [Text] -> AuthHandler app TypedContent
-dispatchAuthRequest p "GET" ["forward"] = dispatchForward p
-dispatchAuthRequest p "GET" ["callback"] = dispatchCallback p
-dispatchAuthRequest _ _ _ = notFound
+dispatchAuthRequest :: Provider app a -> ClientId -> ClientSecret -> Text -> [Text] -> AuthHandler app TypedContent
+dispatchAuthRequest p cid cs "GET" ["forward"] = dispatchForward p cid cs
+dispatchAuthRequest p cid cs "GET" ["callback"] = dispatchCallback p cid cs
+dispatchAuthRequest _ _ _ _ _ = notFound
 
 -- | Handle @GET \/forward@
 --
 -- 1. Set a random CSRF token in our session
 -- 2. Redirect to the Provider's authorization URL
 --
-dispatchForward :: Provider app a -> AuthHandler app TypedContent
-dispatchForward p = do
+dispatchForward :: Provider app a -> ClientId -> ClientSecret -> AuthHandler app TypedContent
+dispatchForward p cid cs = do
     csrf <- setSessionCSRF $ tokenSessionKey p
-    oauth2 <- providerToOAuth2 p csrf
+    oauth2 <- providerToOAuth2 p csrf cid cs
     lift $ redirect $ toText $ authorizationUrl oauth2
 
 -- | Handle @GET \/callback@
@@ -42,11 +42,11 @@ dispatchForward p = do
 -- 2. Use the code parameter to fetch an AccessToken for the Provider
 -- 3. Use the AccessToken to construct a @'Creds'@ value for the Provider
 --
-dispatchCallback :: Provider app a -> AuthHandler app TypedContent
-dispatchCallback p = do
+dispatchCallback :: Provider app a -> ClientId -> ClientSecret -> AuthHandler app TypedContent
+dispatchCallback p cid cs = do
     csrf <- verifySessionCSRF $ tokenSessionKey p
     code <- requireGetParam "code"
-    oauth2 <- providerToOAuth2 p csrf
+    oauth2 <- providerToOAuth2 p csrf cid cs
     manager <- lift $ getsYesod authHttpManager
     token <- denyLeft $ fetchAccessToken manager oauth2 $ ExchangeToken code
     creds <- denyLeft $ providerCreds p manager token
@@ -68,16 +68,16 @@ dispatchCallback p = do
 --
 -- Append the CSRF token to the authorization URL as a state parameter.
 --
-providerToOAuth2 :: Provider app a -> Text -> AuthHandler app OAuth2
-providerToOAuth2 Provider{..} csrfToken = do
+providerToOAuth2 :: Provider app a -> Text -> ClientId -> ClientSecret -> AuthHandler app OAuth2
+providerToOAuth2 Provider{..} csrfToken cid cs = do
     toParent <- getRouteToParent
     urlRender <- lift getUrlRender
 
     return OAuth2
-        { oauthClientId = clientId pClientId
-        , oauthClientSecret = clientSecret pClientSecret
+        { oauthClientId = clientId cid
+        , oauthClientSecret = clientSecret cs
         , oauthAccessTokenEndpoint = accessTokenEndpoint pAccessTokenEndpoint
-        , oauthOAuthorizeEndpoint = authorizeEndpoint pAuthorizeEndpoint
+        , oauthOAuthorizeEndpoint = authorizeEndpoint (pAuthorizeEndpoint cid)
             `withQuery` [("state", encodeUtf8 csrfToken)]
         , oauthCallback = Just
             $ unsafeFromText $ urlRender $ toParent

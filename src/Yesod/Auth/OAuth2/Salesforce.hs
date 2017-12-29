@@ -14,12 +14,10 @@ newtype UserId = UserId { userId :: Text }
 instance FromJSON UserId where
     parseJSON = withObject "User" $ \o -> UserId <$> o .: "user_id"
 
-oauth2Salesforce :: ClientId -> ClientSecret -> [Scope] -> Provider m UserId
-oauth2Salesforce cid cs scopes = Provider
+oauth2Salesforce :: [Scope] -> Provider m UserId
+oauth2Salesforce scopes = Provider
     { pName = "salesforce"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "https://login.salesforce.com/services/oauth2/authorize" `withQuery`
             [ scopeParam " " scopes
             ]
@@ -29,12 +27,10 @@ oauth2Salesforce cid cs scopes = Provider
     , pUserProfileToIdent = userId
     }
 
-oauth2SalesforceSandbox :: ClientId -> ClientSecret -> [Scope] -> Provider m UserId
-oauth2SalesforceSandbox cid cs scopes = Provider
+oauth2SalesforceSandbox :: [Scope] -> Provider m UserId
+oauth2SalesforceSandbox scopes = Provider
     { pName = "salesforce-sandbox"
-    , pClientId = cid
-    , pClientSecret = cs
-    , pAuthorizeEndpoint = AuthorizeEndpoint
+    , pAuthorizeEndpoint = const $ AuthorizeEndpoint
         $ "https://test.salesforce.com/services/oauth2/authorize" `withQuery`
             [ scopeParam " " scopes
             ]
