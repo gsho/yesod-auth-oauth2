@@ -101,7 +101,7 @@ verifySessionCSRF sessionKey = do
     deleteSession sessionKey
 
     unless (sessionToken == Just token)
-        $ permissionDenied "Invalid OAuth2 token"
+        $ permissionDenied "Invalid OAuth2 state token"
 
     return token
 
