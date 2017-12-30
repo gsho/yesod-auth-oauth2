@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Yesod.Auth.OAuth2.Bitbucket
     ( oauth2Bitbucket
@@ -7,7 +8,8 @@ import Data.Aeson
 import Data.Text (Text)
 import Yesod.Auth.OAuth2.Provider
 
-newtype UserId = UserId { userId :: Text }
+newtype UserId = UserId Text
+    deriving ToIdent
 
 instance FromJSON UserId where
     parseJSON = withObject "User" $ \o -> UserId <$> o .: "uuid"
@@ -21,6 +23,4 @@ oauth2Bitbucket scopes = Provider
             ]
     , pAccessTokenEndpoint = "https://bitbucket.com/site/oauth2/access_token"
     , pFetchUserProfile = authGetProfile "https://api.bitbucket.com/2.0/user"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userId
     }

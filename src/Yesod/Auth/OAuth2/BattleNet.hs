@@ -19,8 +19,6 @@ oauth2BattleNet region = Provider
     , pAuthorizeEndpoint = const $ AuthorizeEndpoint $ wwwPath "/oauth/authorize"
     , pAccessTokenEndpoint = AccessTokenEndpoint $ wwwPath "/oauth/token"
     , pFetchUserProfile = authGetProfile $ apiPath "/account/user"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userIdent
     }
   where
     apiPath = fromRelative "https" (apiHost region)

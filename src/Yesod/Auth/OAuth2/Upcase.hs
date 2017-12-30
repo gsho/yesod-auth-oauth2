@@ -12,6 +12,4 @@ oauth2Upcase = Provider
     , pAuthorizeEndpoint = const "http://upcase.com/oauth/authorize"
     , pAccessTokenEndpoint = "http://upcase.com/oauth/token"
     , pFetchUserProfile = authGetProfile "http://upcase.com/api/v1/me.json"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userIdent
     }

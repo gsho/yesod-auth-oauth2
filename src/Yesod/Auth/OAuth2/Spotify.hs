@@ -15,6 +15,4 @@ oauth2Spotify scopes = Provider
             ]
     , pAccessTokenEndpoint = "https://accounts.spotify.com/api/token"
     , pFetchUserProfile = authGetProfile "https://api.spotify.com/v1/me"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userIdentText
     }

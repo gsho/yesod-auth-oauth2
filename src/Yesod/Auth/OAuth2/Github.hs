@@ -16,8 +16,6 @@ oauth2Github scopes = Provider
             ]
     , pAccessTokenEndpoint = "http://github.com/login/oauth/access_token"
     , pFetchUserProfile = authGetProfile "https://api.github.com/user"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userIdent
     }
 
 defaultScopes :: [Scope]

@@ -23,8 +23,6 @@ oauth2Slack scopes = Provider
         request <- setQueryString [("token", Just $ encodeUtf8 $ atoken token)]
             <$> parseUrlThrow "https://slack.com/api/users.identity"
         Right . responseBody <$> httpLbs request manager
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userIdentText
     }
 
 defaultScopes :: [Scope]

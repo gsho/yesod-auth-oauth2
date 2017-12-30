@@ -20,7 +20,7 @@ import Yesod.Auth.OAuth2.Provider
 import Yesod.Core
 
 -- | Dispatch the various OAuth2 handshake routes
-dispatchAuthRequest :: Provider app a -> ClientId -> ClientSecret -> Text -> [Text] -> AuthHandler app TypedContent
+dispatchAuthRequest :: (FromJSON a, ToIdent a) => Provider app a -> ClientId -> ClientSecret -> Text -> [Text] -> AuthHandler app TypedContent
 dispatchAuthRequest p cid cs "GET" ["forward"] = dispatchForward p cid cs
 dispatchAuthRequest p cid cs "GET" ["callback"] = dispatchCallback p cid cs
 dispatchAuthRequest _ _ _ _ _ = notFound
@@ -42,7 +42,7 @@ dispatchForward p cid cs = do
 -- 2. Use the code parameter to fetch an AccessToken for the Provider
 -- 3. Use the AccessToken to construct a @'Creds'@ value for the Provider
 --
-dispatchCallback :: Provider app a -> ClientId -> ClientSecret -> AuthHandler app TypedContent
+dispatchCallback :: (FromJSON a, ToIdent a) => Provider app a -> ClientId -> ClientSecret -> AuthHandler app TypedContent
 dispatchCallback p cid cs = do
     csrf <- verifySessionCSRF $ tokenSessionKey p
     code <- requireGetParam "code"

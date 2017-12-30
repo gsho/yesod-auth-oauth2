@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Yesod.Auth.OAuth2.Salesforce
     ( oauth2Salesforce
@@ -9,7 +10,8 @@ import Data.Aeson
 import Data.Text (Text)
 import Yesod.Auth.OAuth2.Provider
 
-newtype UserId = UserId { userId :: Text }
+newtype UserId = UserId Text
+    deriving ToIdent
 
 instance FromJSON UserId where
     parseJSON = withObject "User" $ \o -> UserId <$> o .: "user_id"
@@ -23,8 +25,6 @@ oauth2Salesforce scopes = Provider
             ]
     , pAccessTokenEndpoint = "https://login.salesforce.com/services/oauth2/token"
     , pFetchUserProfile = authGetProfile "https://login.salesforce.com/services/oauth2/userinfo"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userId
     }
 
 oauth2SalesforceSandbox :: [Scope] -> Provider m UserId
@@ -36,8 +36,6 @@ oauth2SalesforceSandbox scopes = Provider
             ]
     , pAccessTokenEndpoint = "https://test.salesforce.com/services/oauth2/token"
     , pFetchUserProfile = authGetProfile "https://test.salesforce.com/services/oauth2/userinfo"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userId
     }
 
 defaultScopes :: [Scope]

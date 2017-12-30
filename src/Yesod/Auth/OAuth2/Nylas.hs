@@ -25,6 +25,4 @@ oauth2Nylas = Provider
         req <- applyBasicAuth (encodeUtf8 $ atoken token) ""
             <$> parseUrlThrow "https://api.nylas.com/account"
         Right . responseBody <$> httpLbs req manager
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = userIdentText
     }

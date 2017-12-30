@@ -10,15 +10,15 @@ module Yesod.Auth.OAuth2.Provider
     , ProviderName(..)
     , Provider(..)
     , authGetProfile
-    , eitherDecode
     , providerCreds
     , Scope(..)
     , scopeParam
     , withQuery
+    , ToIdent(..)
     ) where
 
 import Control.Monad.Trans.Except
-import Data.Aeson (eitherDecode)
+import Data.Aeson (FromJSON, eitherDecode)
 import Data.Bifunctor (first)
 import qualified Data.ByteString as BS
 import Data.ByteString.Lazy (ByteString, toStrict)
@@ -60,22 +60,10 @@ data Provider m a = Provider
     --
     , pAccessTokenEndpoint :: AccessTokenEndpoint
     , pFetchUserProfile :: Manager -> AccessToken -> IO (Either Text ByteString)
-    -- ^ Fetch an API response with user-identifying data
-    --
-    -- The response body will be parsed for their identifier and preserved as-is
-    -- in @'credsExtra'@ as @userResponseBody@. See @'authGetProfile'@ as an
-    -- example function for use in this field.
-    --
-    , pParseUserProfile :: ByteString -> Either String a
-    -- ^ Parse the API response to a structured type
-    --
-    -- This will almost always be @'eitherDecode'@, i.e. parsing a JSON
-    -- response into a domain module-local @UserId@ type using return-type
-    -- polymorphism.
-    --
-    , pUserProfileToIdent :: a -> Text
-    -- ^ Convert that type into the value for @'credsIdent'@
     }
+
+pParseUserProfile :: FromJSON a => Provider m a -> ByteString -> Either String a
+pParseUserProfile _ = eitherDecode
 
 authGetProfile :: URI -> Manager -> AccessToken -> IO (Either Text ByteString)
 authGetProfile uri manager token =
@@ -84,14 +72,23 @@ authGetProfile uri manager token =
     prettyOAuth2Error :: OAuth2Error Text -> Text
     prettyOAuth2Error = T.pack . show -- FIXME
 
-providerCreds :: Provider m a -> Manager -> OAuth2Token -> IO (Either Text (Creds m))
-providerCreds Provider{..} manager token = runExceptT $ do
+class ToIdent a where
+    toIdent :: a -> Text
+
+instance ToIdent Int where
+    toIdent = T.pack . show
+
+instance ToIdent Text where
+    toIdent = id
+
+providerCreds :: (FromJSON a, ToIdent a) => Provider m a -> Manager -> OAuth2Token -> IO (Either Text (Creds m))
+providerCreds p@Provider{..} manager token = runExceptT $ do
     lbs <- ExceptT $ pFetchUserProfile manager $ accessToken token
-    user <- withExceptT T.pack $ ExceptT $ return $ pParseUserProfile lbs
+    user <- withExceptT T.pack $ ExceptT $ return $ pParseUserProfile p lbs
 
     return Creds
         { credsPlugin = providerName pName
-        , credsIdent = pUserProfileToIdent user
+        , credsIdent = toIdent user
         , credsExtra =
             [ ("accessToken", atoken $ accessToken token)
             , ("userResponseBody", decodeUtf8 $ toStrict lbs)

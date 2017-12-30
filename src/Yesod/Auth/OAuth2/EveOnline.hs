@@ -1,13 +1,14 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Yesod.Auth.OAuth2.EveOnline
     ( oauth2EveOnline
     ) where
 
 import Data.Aeson
-import qualified Data.Text as T
 import Yesod.Auth.OAuth2.Provider
 
-newtype CharId = CharId { charId :: Int }
+newtype CharId = CharId Int
+    deriving ToIdent
 
 instance FromJSON CharId where
     parseJSON = withObject "Character" $ \o -> CharId <$> o .: "CharacterId"
@@ -22,6 +23,4 @@ oauth2EveOnline scopes = Provider
             ]
     , pAccessTokenEndpoint = "https://login.eveonline.com/oauth/token"
     , pFetchUserProfile = authGetProfile "https://login.eveonline.com/oauth/verify"
-    , pParseUserProfile = eitherDecode
-    , pUserProfileToIdent = T.pack . show . charId
     }

@@ -7,6 +7,7 @@ module Yesod.Auth.OAuth2
     , authOAuth2
     ) where
 
+import Data.Aeson (FromJSON)
 import Yesod.Auth
 import Yesod.Auth.OAuth2.Dispatch
 import Yesod.Auth.OAuth2.Provider
@@ -25,7 +26,15 @@ oauth2Url (ProviderName name) = PluginR name ["forward"]
 -- >
 -- > authOAuth2 (oauth2Github defaultScopes) "CLIENT_ID" "CLIENT_SECRET"
 --
-authOAuth2 :: YesodAuth m => Provider m a -> ClientId -> ClientSecret -> AuthPlugin m
+authOAuth2
+    :: ( FromJSON a
+       , ToIdent a
+       , YesodAuth m
+       )
+    => Provider m a
+    -> ClientId
+    -> ClientSecret
+    -> AuthPlugin m
 authOAuth2 = authOAuth2Widget $ \name toParent ->
     [whamlet|
         <a href=@{toParent $ oauth2Url name}>
@@ -47,7 +56,10 @@ authOAuth2 = authOAuth2Widget $ \name toParent ->
 -- >     $ (oauth2Github defaultScopes) -- ...
 --
 authOAuth2Widget
-    :: YesodAuth m
+    :: ( FromJSON a
+       , ToIdent a
+       , YesodAuth m
+       )
     => (ProviderName -> (Route Auth -> Route m) -> WidgetT m IO ())
     -> Provider m a
     -> ClientId

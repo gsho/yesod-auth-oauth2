@@ -1,25 +1,24 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Yesod.Auth.OAuth2.UserId
     ( UserId(..)
-    , userIdent
     , UserIdText(..)
     ) where
 
 import Data.Aeson
 import Data.Text (Text)
-import qualified Data.Text as T
+import Yesod.Auth.OAuth2.Provider (ToIdent(..))
 
 -- | Parse-able type to use for responses with an integer @id@ field
-newtype UserId = UserId { userId :: Int }
+newtype UserId = UserId Int
+    deriving ToIdent
 
 instance FromJSON UserId where
     parseJSON = withObject "User" $ \o -> UserId <$> o .: "id"
 
-userIdent :: UserId -> Text
-userIdent = T.pack . show . userId
-
 -- | Parse-able type to use for responses with a textual @id@ field
-newtype UserIdText = UserIdText { userIdentText :: Text }
+newtype UserIdText = UserIdText Text
+    deriving ToIdent
 
 instance FromJSON UserIdText where
     parseJSON = withObject "User" $ \o -> UserIdText <$> o .: "id"
