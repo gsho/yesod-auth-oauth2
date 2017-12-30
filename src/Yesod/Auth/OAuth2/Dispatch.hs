@@ -80,6 +80,7 @@ providerToOAuth2 Provider{..} csrfToken cid cs = do
         , oauthOAuthorizeEndpoint = authorizeEndpoint (pAuthorizeEndpoint cid)
             `withQuery` [("state", encodeUtf8 csrfToken)]
         , oauthCallback = Just
+            -- FIXME: clarify the error here when appRoot is non-absolute
             $ unsafeFromText $ urlRender $ toParent
             $ PluginR (providerName pName) ["callback"]
         }
